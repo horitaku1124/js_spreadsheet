@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>JS Spreadsheet</title>
+<script>
+let headerCells;
+let bodyData;
+document.addEventListener('DOMContentLoaded', () => {
+    let perform = document.getElementById('perform');
+    perform.addEventListener('click', (e) => {
+        let inputText = document.getElementById('input').textContent;
+        let lines = inputText.split('\n');
+        let header = lines[0];
+        headerCells = header.replace(/^# /, '').split(', ');
+
+        let displayTable = document.createElement('table');
+        let thead = document.createElement('thead');
+        let tr = document.createElement('tr');
+        for (let cell of headerCells) {
+            let cellElm = document.createElement('th');
+            cellElm.innerText = cell;
+            tr.appendChild(cellElm);
+        }
+        thead.appendChild(tr);
+        displayTable.appendChild(thead);
+
+        let tbody = document.createElement('tbody');
+        bodyData = [];
+        for (let i = 1;i < lines.length;i++) {
+            if (lines[i] == '') continue;
+            let tr = document.createElement('tr');
+            let cells = lines[i].split(', ');
+            cells = cells
+                .map(e => e.replace(/^'(.+)'$/, '$1').replace(/^"(.+)"$/, '$1'));
+
+            bodyData.push(cells);
+
+            for (let cell of cells) {
+                let cellElm = document.createElement('td');
+                cellElm.innerText = cell;
+                tr.appendChild(cellElm);
+            }
+            tbody.appendChild(tr);
+        }
+        displayTable.appendChild(tbody);
+
+        document.getElementById('displayTable').appendChild(displayTable);
+    });
+});
+</script>
+</head>
+<body>
+<div>
+<textarea id="input" style="width: 100%; height: 100px; box-sizing: border-box;">
+# id, name, status
+'1', 'Name1', 'ok'
+'2', 'Name2', 'ng'
+'3', 'Name3', 'ok'
+</textarea>
+<br />
+<input type="button" id="perform" value="Run">
+</div>
+<div id="displayTable"></div>
+</body>
+</html>
