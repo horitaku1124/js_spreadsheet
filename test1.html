@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>JS Spreadsheet</title>
 <script>
+"use strict";
 let headerCells;
 let bodyData;
 document.addEventListener('DOMContentLoaded', () => {
@@ -36,9 +37,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             bodyData.push(cells);
 
-            for (let cell of cells) {
+            for (let j = 0;j < cells.length;j++) {
+                let cell = cells[j];
                 let cellElm = document.createElement('td');
-                cellElm.innerText = cell;
+                cellElm.setAttribute('data-id', (i - 1) + "_" + j);
+                cellElm.setAttribute('data-appended', "0");
+                cellElm.addEventListener('mouseover', mouseOverEvent);
+
+                let cellText = document.createElement('span');
+                cellText.innerText = cell;
+                cellElm.appendChild(cellText);
+
                 tr.appendChild(cellElm);
             }
             tbody.appendChild(tr);
@@ -48,6 +57,21 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('displayTable').appendChild(displayTable);
     });
 });
+function mouseOverEvent(event) {
+    let td = this;
+    let isAppended = td.getAttribute('data-appended') === '1';
+    let [row, cell] = td.getAttribute('data-id').split('_');
+    console.log(isAppended, row, cell);
+    if (isAppended) {
+
+    } else {
+        let input = document.createElement('input');
+        input.setAttribute('type', 'text');
+        input.setAttribute('value', bodyData[row][cell]);
+        td.appendChild(input);
+        td.setAttribute('data-appended', '1')
+    }
+}
 </script>
 </head>
 <body>
