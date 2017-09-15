@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>JS DOM</title>
+<script>
+"use strict";
+
+function elm(name, child) {
+    let parent = document.createElement(name);
+    if (child instanceof Function) {
+        let childElm = child(parent);
+        if (childElm) {
+            parent.appendChild(childElm);
+        }
+    } else if(child instanceof Object && !(child instanceof Array)) {
+        for (let key of Object.keys(child)) {
+            parent[key] = child[key];
+        }
+    }
+    return parent;
+}
+
+let e = new Proxy({}, {
+    get: function(target, name) {
+        return function(child) {
+            return elm(name, child);
+        }
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    let headerCells = ['A', 'B', 'C', 'D'];
+    let displayTable = e.table(_ => e.thead(_ => e.tr(tr => {
+        headerCells.forEach(cell => {
+            tr.appendChild(e.th({'innerText': cell}));
+        });
+    })));
+    document.getElementById('displayTable').appendChild(displayTable);
+});
+</script>
+</head>
+<body>
+<div id="displayTable"></div>
+</body>
+</html>
