@@ -1,13 +1,10 @@
-#input {
+#input, #output {
     width: 100%;
     height: 100px;
     box-sizing: border-box;
 }
 .hidden {
     display: none;
-}
-.editable {
-    width: 60px;
 }
 #displayTable > table {
     border-collapse: collapse;
@@ -18,6 +15,12 @@
 #displayTable > table > * > tr > th,#displayTable > table > * > tr > td {
     border: 1px solid #aaa;
     width: 60px;
+    min-width: 60px;
+}
+#displayTable > table > * > tr > td .editable{
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 60px;
 }
 #displayTable > table > * > tr:nth-child(2n) > td {
     background-color: #fef9ff;

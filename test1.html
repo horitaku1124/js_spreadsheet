@@ -10,13 +10,17 @@ let headerCells;
 let bodyData;
 document.addEventListener('DOMContentLoaded', () => {
     let perform = document.getElementById('perform');
+    let generate = document.getElementById('generate');
     perform.addEventListener('click', (e) => {
         onPerform();
+    });
+    generate.addEventListener('click', (e) => {
+        onGenerate();
     });
 });
 
 function onPerform() {
-    let inputText = document.getElementById('input').textContent;
+    let inputText = document.getElementById('input').value;
     let lines = inputText.split('\n');
     let header = lines[0];
     headerCells = header.replace(/^# /, '').split(', ');
@@ -39,7 +43,7 @@ function onPerform() {
         let tr = document.createElement('tr');
         let cells = lines[i].split(', ');
         cells = cells
-            .map(e => e.replace(/^'(.+)'$/, '$1').replace(/^"(.+)"$/, '$1'));
+            .map(e => e.replace(/^'(.*)'$/, '$1').replace(/^"(.*)"$/, '$1'));
 
         bodyData.push(cells);
 
@@ -65,7 +69,20 @@ function onPerform() {
     document.getElementById('displayTable').appendChild(displayTable);
 }
 
+function onGenerate() {
+    let tableName = document.getElementById('table_name').value;
+    let insertSql = "INSERT INTO `" + tableName + "` (";
+    insertSql += headerCells.map(e => "`" + e + "`").join(',');
+    insertSql += ') VALUES (';
 
+    let outputSql = "";
+    for (let row of bodyData) {
+        outputSql += insertSql;
+        outputSql += (row.map(e => "'" + e + "'").join(','));
+        outputSql += ');\r\n';
+    }
+    document.getElementById('output').value = outputSql;
+}
 let onMouseTd = null;
 function mouseOverEvent(event) {
     let td = this;
@@ -92,6 +109,10 @@ function mouseOverEvent(event) {
         td.appendChild(input);
         td.setAttribute('data-appended', '1');
         addClass(td.querySelector('span'), 'hidden');
+        input.addEventListener('change', () => {
+            bodyData[row][cell] = input.value;
+            td.querySelector('span').innerHTML = input.value;
+        });
     }
     onMouseTd = td;
 }
@@ -123,5 +144,12 @@ function removeClass(target, className) {
 <input type="button" id="perform" value="Run">
 </div>
 <div id="displayTable"></div>
+<div>
+    <input type="text" placeholder="table name" id="table_name">
+</div>
+<input type="button" id="generate" value="SQL">
+<div>
+    <textarea id="output"></textarea>
+</div>
 </body>
 </html>
