@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let j = 0;j < cells.length;j++) {
                 let cell = cells[j];
                 let cellElm = document.createElement('td');
+                cellElm.setAttribute('id', "cell_" + (i - 1) + "_" + j);
                 cellElm.setAttribute('data-id', (i - 1) + "_" + j);
                 cellElm.setAttribute('data-appended', "0");
                 cellElm.addEventListener('mouseover', mouseOverEvent);
@@ -57,22 +58,61 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('displayTable').appendChild(displayTable);
     });
 });
+let onMouseTd = null;
 function mouseOverEvent(event) {
     let td = this;
+    if (onMouseTd && onMouseTd.id == td.id) {
+        return;
+    }
     let isAppended = td.getAttribute('data-appended') === '1';
     let [row, cell] = td.getAttribute('data-id').split('_');
     console.log(isAppended, row, cell);
-    if (isAppended) {
 
+    if (onMouseTd) {
+        addClass(onMouseTd.querySelector('input'), 'hidden');
+        removeClass(onMouseTd.querySelector('span'), 'hidden');
+    }
+
+    if (isAppended) {
+        td.querySelector('span').setAttribute('class', 'hidden');
+        removeClass(td.querySelector('input'), 'hidden');
     } else {
         let input = document.createElement('input');
         input.setAttribute('type', 'text');
         input.setAttribute('value', bodyData[row][cell]);
+        addClass(input, 'editable');
         td.appendChild(input);
-        td.setAttribute('data-appended', '1')
+        td.setAttribute('data-appended', '1');
+        addClass(td.querySelector('span'), 'hidden');
     }
+    onMouseTd = td;
+}
+function addClass(target, className) {
+    let classValue = target.getAttribute('class') || '';
+    let classValues = classValue.split(' ');
+    if (!classValues.includes(className)) {
+        classValues.push(className);
+    }
+    target.setAttribute('class', classValues.join(' '))
+}
+
+function removeClass(target, className) {
+    let classValue = target.getAttribute('class');
+    classValue = classValue.split(' ').filter(e => e !== className).join(' ');
+    target.setAttribute('class', classValue);
 }
 </script>
+<style>
+    .hidden {
+        display: none;
+    }
+    .editable {
+        width: 60px;
+    }
+    #displayTable td {
+        width: 60px;
+    }
+</style>
 </head>
 <body>
 <div>
