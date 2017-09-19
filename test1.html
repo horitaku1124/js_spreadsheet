@@ -31,6 +31,7 @@ function onPerform() {
     for (let cell of headerCells) {
         let cellElm = document.createElement('th');
         cellElm.innerText = cell;
+        cellElm.setAttribute('title', cell);
         tr.appendChild(cellElm);
     }
     thead.appendChild(tr);
@@ -67,6 +68,7 @@ function onPerform() {
     document.getElementById('displayTable').innerHTML = '';
 
     document.getElementById('displayTable').appendChild(displayTable);
+    document.getElementById('generate').removeAttribute('disabled');
 }
 
 function onGenerate() {
@@ -77,11 +79,13 @@ function onGenerate() {
 
     let outputSql = "";
     for (let row of bodyData) {
-        outputSql += insertSql;
-        outputSql += (row.map(e => "'" + e + "'").join(','));
-        outputSql += ');\r\n';
+        outputSql += insertSql
+            + (row
+                .map(e => e.replace(/</g, '&lt;').replace(/>/g, '&gt;'))
+                .map(e => "'" + e + "'").join(','))
+            + ');\r\n';
     }
-    document.getElementById('output').value = outputSql;
+    document.getElementById('output').innerHTML = outputSql;
 }
 let onMouseTd = null;
 function mouseOverEvent(event) {
@@ -147,9 +151,10 @@ function removeClass(target, className) {
 <div>
     <input type="text" placeholder="table name" id="table_name">
 </div>
-<input type="button" id="generate" value="SQL">
+<input type="button" id="generate" value="SQL" disabled="disabled">
 <div>
-    <textarea id="output"></textarea>
+    <!--<textarea id="output"></textarea>-->
+    <pre id="output"></pre>
 </div>
 </body>
 </html>
