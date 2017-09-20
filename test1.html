@@ -25,10 +25,25 @@ function onPerform() {
     let header = lines[0];
     headerCells = header.replace(/^# /, '').split(', ');
 
+    bodyData = [];
+
+    for (let i = 1;i < lines.length;i++) {
+        if (lines[i] == '') continue;
+        let cells = lines[i].split(', ');
+        cells = cells.map(e => {
+            return e === 'NULL' ? null : e.replace(/^'(.*)'$/, '$1').replace(/^"(.*)"$/, '$1');
+        });
+        bodyData.push(cells);
+    }
+
+    createDataTable(headerCells, bodyData);
+}
+
+function createDataTable(header, body) {
     let displayTable = document.createElement('table');
     let thead = document.createElement('thead');
     let tr = document.createElement('tr');
-    for (let cell of headerCells) {
+    for (let cell of header) {
         let cellElm = document.createElement('th');
         cellElm.innerText = cell;
         cellElm.setAttribute('title', cell);
@@ -38,27 +53,24 @@ function onPerform() {
     displayTable.appendChild(thead);
 
     let tbody = document.createElement('tbody');
-    bodyData = [];
-    for (let i = 1;i < lines.length;i++) {
-        if (lines[i] == '') continue;
+    for (let i = 0;i < body.length;i++) {
         let tr = document.createElement('tr');
-        let cells = lines[i].split(', ');
-        cells = cells
-            .map(e => e.replace(/^'(.*)'$/, '$1').replace(/^"(.*)"$/, '$1'));
-
-        bodyData.push(cells);
+        let cells = body[i];
 
         for (let j = 0;j < cells.length;j++) {
             let cell = cells[j];
             let cellElm = document.createElement('td');
-            cellElm.setAttribute('id', "cell_" + (i - 1) + "_" + j);
-            cellElm.setAttribute('data-id', (i - 1) + "_" + j);
-            cellElm.setAttribute('data-appended', "0");
-            cellElm.addEventListener('mouseover', mouseOverEvent);
 
-            let cellText = document.createElement('span');
-            cellText.innerText = cell;
-            cellElm.appendChild(cellText);
+            if (cell !== null) {
+                cellElm.setAttribute('id', "cell_" + i + "_" + j);
+                cellElm.setAttribute('data-id', i + "_" + j);
+                cellElm.setAttribute('data-appended', "0");
+                cellElm.addEventListener('mouseover', mouseOverEvent);
+
+                let cellText = document.createElement('span');
+                cellText.innerText = cell;
+                cellElm.appendChild(cellText);
+            }
 
             tr.appendChild(cellElm);
         }
@@ -81,8 +93,14 @@ function onGenerate() {
     for (let row of bodyData) {
         outputSql += insertSql
             + (row
-                .map(e => e.replace(/</g, '&lt;').replace(/>/g, '&gt;'))
-                .map(e => "'" + e + "'").join(','))
+                .map(e => {
+                    if (e == null) {
+                        return "NULL";
+                    } else {
+                        e = e.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                        return "'" + e + "'";
+                    }
+                }).join(','))
             + ');\r\n';
     }
     document.getElementById('output').innerHTML = outputSql;
@@ -143,6 +161,7 @@ function removeClass(target, className) {
 '1', 'Name1', 'ok'
 '2', 'Name2', 'ng'
 '3', 'Name3', 'ok'
+'4', '', NULL
 </textarea>
 <br />
 <input type="button" id="perform" value="Run">
