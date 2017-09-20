@@ -37,6 +37,9 @@
     min-width: 80px;
     padding: 3px;
 }
+#displayTable > table > * > tr > td{
+    position: relative;
+}
 #displayTable > table > * > tr > td .editable{
     box-sizing: border-box;
     width: 100%;
@@ -44,4 +47,13 @@
 }
 #displayTable > table > * > tr:nth-child(2n) > td {
     background-color: #fef9ff;
+}
+
+.null_area {
+    position: absolute;
+    bottom:0;
+    right: 0;
+    background-color: #f7f7f7;
+    font-size: 0.8rem;
+    padding: 2px 5px;
 }

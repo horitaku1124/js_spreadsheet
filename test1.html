@@ -70,6 +70,11 @@ function createDataTable(header, body) {
                 let cellText = document.createElement('span');
                 cellText.innerText = cell;
                 cellElm.appendChild(cellText);
+            } else {
+                let nullArea =  document.createElement('span');
+                nullArea.innerHTML = 'Null';
+                nullArea.setAttribute('class', 'null_area');
+                cellElm.appendChild(nullArea);
             }
 
             tr.appendChild(cellElm);
@@ -94,7 +99,7 @@ function onGenerate() {
         outputSql += insertSql
             + (row
                 .map(e => {
-                    if (e == null) {
+                    if (e === null) {
                         return "NULL";
                     } else {
                         e = e.replace(/</g, '&lt;').replace(/>/g, '&gt;')
