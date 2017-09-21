@@ -2,6 +2,8 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<script src="js/query_parser.js"></script>
+<script src="js/query_node.js"></script>
 <link rel="stylesheet" type="text/css" href="css/main.css">
 <title>JS Spreadsheet</title>
 <script>
@@ -9,10 +11,14 @@
 let headerCells;
 let bodyData;
 document.addEventListener('DOMContentLoaded', () => {
-    let perform = document.getElementById('perform');
+    let performFromWb = document.getElementById('perform_from_wb');
+    let performFromSql = document.getElementById('perform_from_sql');
     let generate = document.getElementById('generate');
-    perform.addEventListener('click', (e) => {
+    performFromWb.addEventListener('click', (e) => {
         onPerform();
+    });
+    performFromSql.addEventListener('click', (e) => {
+        onPerformSql();
     });
     generate.addEventListener('click', (e) => {
         onGenerate();
@@ -36,6 +42,16 @@ function onPerform() {
         bodyData.push(cells);
     }
 
+    createDataTable(headerCells, bodyData);
+}
+function onPerformSql() {
+    let sql = document.getElementById('inputSection').value;
+    let parser = new QueryParser([]);
+    let parseResult = parser.convert(sql);
+    headerCells = parseResult.selectors;
+    bodyData = parseResult.records;
+
+    document.getElementById('table_name').value = parseResult.into;
     createDataTable(headerCells, bodyData);
 }
 
@@ -169,7 +185,9 @@ function removeClass(target, className) {
 '4', '', NULL
 </textarea>
     <br />
-    <input type="button" id="perform" value="Run">
+    <input type="button" id="perform_from_wb" value="From Workbench">
+    &nbsp;
+    <input type="button" id="perform_from_sql" value="From SQL">
 </section>
 <section id="displayTable"></section>
 <section>
