@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function onPerform() {
-    let inputText = document.getElementById('input').value;
+    let inputText = document.getElementById('inputSection').value;
     let lines = inputText.split('\n');
     let header = lines[0];
     headerCells = header.replace(/^# /, '').split(', ');
@@ -108,7 +108,7 @@ function onGenerate() {
                 }).join(','))
             + ');\r\n';
     }
-    document.getElementById('output').innerHTML = outputSql;
+    document.getElementById('outputText').innerHTML = outputSql;
 }
 let onMouseTd = null;
 function mouseOverEvent(event) {
@@ -160,25 +160,27 @@ function removeClass(target, className) {
 </script>
 </head>
 <body>
-<div>
-<textarea id="input">
+<section>
+<textarea id="inputSection">
 # id, name, status
 '1', 'Name1', 'ok'
 '2', 'Name2', 'ng'
 '3', 'Name3', 'ok'
 '4', '', NULL
 </textarea>
-<br />
-<input type="button" id="perform" value="Run">
-</div>
-<div id="displayTable"></div>
-<div>
-    <input type="text" placeholder="table name" id="table_name">
-</div>
-<input type="button" id="generate" value="SQL" disabled="disabled">
-<div>
-    <!--<textarea id="output"></textarea>-->
-    <pre id="output"></pre>
-</div>
+    <br />
+    <input type="button" id="perform" value="Run">
+</section>
+<section id="displayTable"></section>
+<section>
+    <div>
+        <input type="text" placeholder="table name" id="table_name">
+    </div>
+    <input type="button" id="generate" value="SQL" disabled="disabled">
+    <div>
+        <!--<textarea id="output"></textarea>-->
+        <pre id="outputText"></pre>
+    </div>
+</section>
 </body>
 </html>
