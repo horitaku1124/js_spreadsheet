@@ -37,7 +37,7 @@ function onPerform() {
         if (lines[i] === '') continue;
         let cells = lines[i].split(', ');
         cells = cells.map(e => {
-            return e === 'NULL' ? null : e.replace(/^'(.*)'$/, '$1').replace(/^"(.*)"$/, '$1');
+            return new SQLValue(e === 'NULL' ? null : e.replace(/^'(.*)'$/, '$1').replace(/^"(.*)"$/, '$1'));
         });
         bodyData.push(cells);
     }
@@ -50,6 +50,17 @@ function onPerformSql() {
     let parseResult = parser.convert(sql);
     headerCells = parseResult.selectors;
     bodyData = parseResult.records;
+
+    bodyData = bodyData.map(row => row.map(cell => {
+        let type =  SQLValue_STRING;
+        if (cell === 'NULL') {
+            type = SQLValue_NULL;
+            cell = null;
+        } else if (/\S\(\)/.test(cell)) {
+            type = SQLValue_FUNCTION;
+        }
+        return new SQLValue(cell, type)
+    }));
 
     document.getElementById('table_name').value = parseResult.into;
     createDataTable(headerCells, bodyData);
@@ -77,14 +88,14 @@ function createDataTable(header, body) {
             let cell = cells[j];
             let cellElm = document.createElement('td');
 
-            if (cell !== null) {
+            if (cell.type !== SQLValue_NULL) {
                 cellElm.setAttribute('id', "cell_" + i + "_" + j);
                 cellElm.setAttribute('data-id', i + "_" + j);
                 cellElm.setAttribute('data-appended', "0");
                 cellElm.addEventListener('mouseover', mouseOverEvent);
 
                 let cellText = document.createElement('span');
-                cellText.innerText = cell;
+                cellText.innerText = cell.value;
                 cellElm.appendChild(cellText);
             } else {
                 let nullArea =  document.createElement('span');
@@ -115,10 +126,12 @@ function onGenerate() {
         outputSql += insertSql
             + (row
                 .map(e => {
-                    if (e === null) {
+                    if (e.type === SQLValue_NULL) {
                         return "NULL";
+                    } else if (e.type === SQLValue_FUNCTION) {
+                        return e.value;
                     } else {
-                        e = e.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                        e = e.value.replace(/</g, '&lt;').replace(/>/g, '&gt;');
                         return "'" + e + "'";
                     }
                 }).join(','))
@@ -129,7 +142,7 @@ function onGenerate() {
 let onMouseTd = null;
 function mouseOverEvent(event) {
     let td = this;
-    if (onMouseTd && onMouseTd.id == td.id) {
+    if (onMouseTd && onMouseTd.id === td.id) {
         return;
     }
     let isAppended = td.getAttribute('data-appended') === '1';
@@ -147,13 +160,13 @@ function mouseOverEvent(event) {
     } else {
         let input = document.createElement('input');
         input.setAttribute('type', 'text');
-        input.setAttribute('value', bodyData[row][cell]);
+        input.setAttribute('value', bodyData[row][cell].value);
         addClass(input, 'editable');
         td.appendChild(input);
         td.setAttribute('data-appended', '1');
         addClass(td.querySelector('span'), 'hidden');
         input.addEventListener('change', () => {
-            bodyData[row][cell] = input.value;
+            bodyData[row][cell] = new SQLValue(input.value);
             td.querySelector('span').innerHTML = input.value;
         });
     }
@@ -172,6 +185,30 @@ function removeClass(target, className) {
     let classValue = target.getAttribute('class');
     classValue = classValue.split(' ').filter(e => e !== className).join(' ');
     target.setAttribute('class', classValue);
+}
+
+const SQLValue_NULL     = 100,
+      SQLValue_NUMBER   = 101,
+      SQLValue_STRING   = 102,
+      SQLValue_FUNCTION = 103;
+class SQLValue {
+    constructor (value, type) {
+        this._value = value;
+        if (typeof type === 'undefined') {
+            if (value === null) {
+                type = SQLValue_NULL;
+            } else if(typeof value === 'string') {
+                type = SQLValue_STRING;
+            }
+        }
+        this._type = type;
+    }
+    get type() {
+        return this._type;
+    }
+    get value() {
+        return this._value;
+    }
 }
 </script>
 </head>
