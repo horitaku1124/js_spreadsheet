@@ -34,7 +34,7 @@ function onPerform() {
     bodyData = [];
 
     for (let i = 1;i < lines.length;i++) {
-        if (lines[i] == '') continue;
+        if (lines[i] === '') continue;
         let cells = lines[i].split(', ');
         cells = cells.map(e => {
             return e === 'NULL' ? null : e.replace(/^'(.*)'$/, '$1').replace(/^"(.*)"$/, '$1');

@@ -1,3 +1,5 @@
+"use strict";
+
 const TYPE_NONE = 0,
     TYPE_COLUMN = 1,
     TYPE_FROM = 2,
@@ -45,7 +47,7 @@ class Node {
     }
 
     addChild(node) {
-        if(typeof this._children == 'undefined') {
+        if(typeof this._children === 'undefined') {
             this._children = [];
         }
         this._children.push(node);
