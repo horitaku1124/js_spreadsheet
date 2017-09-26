@@ -116,26 +116,43 @@ function createDataTable(header, body) {
 }
 
 function onGenerate() {
+    let combineToOneQuery = document.querySelector('#combine_1_query').checked;
     let tableName = document.getElementById('table_name').value;
     let insertSql = "INSERT INTO `" + tableName + "` (";
     insertSql += headerCells.map(e => "`" + e + "`").join(',');
-    insertSql += ') VALUES (';
+    insertSql += ') VALUES ';
 
     let outputSql = "";
-    for (let row of bodyData) {
-        outputSql += insertSql
-            + (row
-                .map(e => {
-                    if (e.type === SQLValue_NULL) {
-                        return "NULL";
-                    } else if (e.type === SQLValue_FUNCTION) {
-                        return e.value;
-                    } else {
-                        e = e.value.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                        return "'" + e + "'";
-                    }
-                }).join(','))
-            + ');\r\n';
+    if (combineToOneQuery) {
+        outputSql = insertSql + "\r\n(";
+        outputSql += bodyData.map(row => row
+            .map(e => {
+                if (e.type === SQLValue_NULL) {
+                    return "NULL";
+                } else if (e.type === SQLValue_FUNCTION) {
+                    return e.value;
+                } else {
+                    e = e.value.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    return "'" + e + "'";
+                }
+            }).join(",")).join(")\r\n(");
+        outputSql += ");"
+    } else {
+        for (let row of bodyData) {
+            outputSql += insertSql + "("
+                + (row
+                    .map(e => {
+                        if (e.type === SQLValue_NULL) {
+                            return "NULL";
+                        } else if (e.type === SQLValue_FUNCTION) {
+                            return e.value;
+                        } else {
+                            e = e.value.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                            return "'" + e + "'";
+                        }
+                    }).join(','))
+                + ');\r\n';
+        }
     }
     document.getElementById('outputText').innerHTML = outputSql;
 }
@@ -231,7 +248,13 @@ class SQLValue {
     <div>
         <input type="text" placeholder="table name" id="table_name">
     </div>
-    <input type="button" id="generate" value="SQL" disabled="disabled">
+    <div>
+        <input type="button" id="generate" value="SQL" disabled="disabled">
+        <label>
+            <input type="checkbox" id="combine_1_query">
+            combine to 1query
+        </label>
+    </div>
     <div>
         <!--<textarea id="output"></textarea>-->
         <pre id="outputText"></pre>
