@@ -204,10 +204,10 @@ function removeClass(target, className) {
     target.setAttribute('class', classValue);
 }
 
-const SQLValue_NULL     = 100,
-      SQLValue_NUMBER   = 101,
-      SQLValue_STRING   = 102,
-      SQLValue_FUNCTION = 103;
+const SQLValue_NULL     = Symbol('NULL'),
+      SQLValue_NUMBER   = Symbol('NUMBER'),
+      SQLValue_STRING   = Symbol('STRING'),
+      SQLValue_FUNCTION = Symbol('FUNCTION');
 class SQLValue {
     constructor (value, type) {
         this._value = value;
