@@ -70,6 +70,9 @@ function createDataTable(header, body) {
     let displayTable = document.createElement('table');
     let thead = document.createElement('thead');
     let tr = document.createElement('tr');
+
+    // Control area
+    tr.appendChild(document.createElement('th'));
     for (let cell of header) {
         let cellElm = document.createElement('th');
         cellElm.innerText = cell;
@@ -84,6 +87,26 @@ function createDataTable(header, body) {
         let tr = document.createElement('tr');
         let cells = body[i];
 
+        // Control Area
+        let controlArea = document.createElement('td');
+        let cpButton = document.createElement('input');
+        cpButton.setAttribute('type', 'button');
+        cpButton.setAttribute('value', 'cp');
+        cpButton.addEventListener('click', () => {
+            bodyData.push(bodyData[i].map(e => e.clone()));
+            createDataTable(headerCells, bodyData);
+        });
+        let delButton = document.createElement('input');
+        delButton.setAttribute('type', 'button');
+        delButton.addEventListener('click', () => {
+            bodyData.splice(i, 1);
+            createDataTable(headerCells, bodyData);
+        });
+        delButton.setAttribute('value', 'del');
+
+        controlArea.appendChild(cpButton);
+        controlArea.appendChild(delButton);
+        tr.appendChild(controlArea);
         for (let j = 0;j < cells.length;j++) {
             let cell = cells[j];
             let cellElm = document.createElement('td');
@@ -164,7 +187,7 @@ function mouseOverEvent(event) {
     }
     let isAppended = td.getAttribute('data-appended') === '1';
     let [row, cell] = td.getAttribute('data-id').split('_');
-    console.log(isAppended, row, cell);
+//    console.log(isAppended, row, cell);
 
     if (onMouseTd) {
         addClass(onMouseTd.querySelector('input'), 'hidden');
@@ -225,6 +248,9 @@ class SQLValue {
     }
     get value() {
         return this._value;
+    }
+    clone() {
+        return new SQLValue(this._value, this._value);
     }
 }
 </script>
