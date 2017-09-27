@@ -26,10 +26,31 @@
 #displayTable > table > * > tr > th {
     background-color: #e4e4e4;
     max-width: 100px;
+    position: relative;
+}
+#displayTable > table > * > tr > th .text_area {
     text-overflow: ellipsis;
     overflow: hidden;
     font-size: 0.95rem;
-
+    width: 100%;
+    display: block;
+}
+#displayTable > table > * > tr > th .menu_toggle{
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    cursor: pointer;
+}
+#displayTable > table > * > tr > th .menu_action{
+    position: absolute;
+    right: 0;
+    bottom: -40px;
+    cursor: pointer;
+    display: none;
+    z-index: 100;
+    background-color: white;
+    padding: 10px 5px;
+    border: 1px solid #ccc;
 }
 #displayTable > table > * > tr > th,#displayTable > table > * > tr > td {
     border: 1px solid #aaa;

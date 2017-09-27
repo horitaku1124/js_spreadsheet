@@ -73,10 +73,45 @@ function createDataTable(header, body) {
 
     // Control area
     tr.appendChild(document.createElement('th'));
-    for (let cell of header) {
+    for (let i = 0;i < header.length;i++) {
+        let cell = header[i];
+        let menuAction = document.createElement('div');
+        menuAction.setAttribute('class', 'menu_action');
+
+        let deleteThisColumn = document.createElement('input');
+        deleteThisColumn.setAttribute('type', 'button');
+        deleteThisColumn.setAttribute('class', 'delete_this_column');
+        deleteThisColumn.setAttribute('value', 'Delete this column');
+        let index = i;
+        deleteThisColumn.addEventListener('click', () => {
+            headerCells.splice(index, 1);
+            bodyData = bodyData.map(row => {
+                row.splice(index, 1);
+                return row;
+            });
+            createDataTable(headerCells, bodyData);
+        });
+
+        menuAction.appendChild(deleteThisColumn);
+
+        let menu = document.createElement('span');
+        menu.setAttribute('class', 'menu_toggle');
+        menu.addEventListener('click', () => {
+            if(menuAction.style.display === 'block') {
+                menuAction.style.display = 'none';
+            } else {
+                menuAction.style.display = 'block';
+            }
+        });
+        menu.innerText = '▽';
         let cellElm = document.createElement('th');
-        cellElm.innerText = cell;
+        let cellEllipsisElm = document.createElement('span');
+        cellEllipsisElm.setAttribute('class', 'text_area');
+        cellEllipsisElm.innerText = cell;
+        cellElm.appendChild(cellEllipsisElm);
         cellElm.setAttribute('title', cell);
+        cellElm.appendChild(menu);
+        cellElm.appendChild(menuAction);
         tr.appendChild(cellElm);
     }
     thead.appendChild(tr);
