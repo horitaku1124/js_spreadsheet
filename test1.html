@@ -74,6 +74,7 @@ function createDataTable(header, body) {
     // Control area
     tr.appendChild(document.createElement('th'));
     for (let i = 0;i < header.length;i++) {
+        let index = i;
         let cell = header[i];
         let menuAction = document.createElement('div');
         menuAction.setAttribute('class', 'menu_action');
@@ -82,7 +83,6 @@ function createDataTable(header, body) {
         deleteThisColumn.setAttribute('type', 'button');
         deleteThisColumn.setAttribute('class', 'delete_this_column');
         deleteThisColumn.setAttribute('value', 'Delete this column');
-        let index = i;
         deleteThisColumn.addEventListener('click', () => {
             headerCells.splice(index, 1);
             bodyData = bodyData.map(row => {
@@ -91,8 +91,33 @@ function createDataTable(header, body) {
             });
             createDataTable(headerCells, bodyData);
         });
+        let changeThisColumn = document.createElement('input');
+        changeThisColumn.setAttribute('type', 'button');
+        changeThisColumn.setAttribute('class', 'change_this_to');
+        changeThisColumn.setAttribute('value', 'Change this column');
+        changeThisColumn.addEventListener('click', () => {
+            menuAction.click();
+            selectWindow(SQLValue_Select, (type) => {
+                if (type === SQLValue_NULL[toString]()) {
+                    bodyData = bodyData.map(row => {
+                        row[index] = new SQLValue(null);
+                        return row;
+                    });
+                    createDataTable(headerCells, bodyData);
+                } else {
+                    inputWindow(text => {
+                        bodyData = bodyData.map(row => {
+                            row[index] = new SQLValue(text, SQLValue.fromString(type));
+                            return row;
+                        });
+                        createDataTable(headerCells, bodyData);
+                    }, true);
+                }
+            });
+        });
 
         menuAction.appendChild(deleteThisColumn);
+        menuAction.appendChild(changeThisColumn);
 
         let menu = document.createElement('span');
         menu.setAttribute('class', 'menu_toggle');
@@ -327,14 +352,30 @@ class SQLValue {
     clone() {
         return new SQLValue(this._value, this._type);
     }
+    static fromString(string) {
+        if (string === SQLValue_NULL[toString]()) {
+            return SQLValue_NULL;
+        } else if (string === (SQLValue_STRING[toString]())){
+            return SQLValue_STRING;
+        } else if (string === (SQLValue_FUNCTION[toString]())){
+            return SQLValue_FUNCTION;
+        } else if (string === (SQLValue_NUMBER[toString]())){
+            return SQLValue_NUMBER;
+        }
+        return "";
+    }
 }
 function selectWindow(array, callback) {
     let selectorWindow = document.getElementById('selectorWindowArea');
     if(!selectorWindow) {
         selectorWindow = document.createElement('div');
         selectorWindow.setAttribute('id', 'selectorWindowArea');
+        document.body.appendChild(selectorWindow);
+
+        selectorWindow.setAttribute('style', 'position:fixed;top:0;left:0;background-color:rgba(200,200,200,0.7);width:100%;height:100%;');
     } else {
         selectorWindow.innerHTML = '';
+        selectorWindow.style.display = '';
     }
 
     array.forEach(e => {
@@ -348,13 +389,46 @@ function selectWindow(array, callback) {
 
         selectorWindow.appendChild(radios);
     });
-    selectorWindow.setAttribute('style', 'position:fixed;top:0;left:0;background-color:rgba(200,200,200,0.7);width:100%;height:100%;');
-    document.body.appendChild(selectorWindow);
+
     document.addEventListener('keyup', function(event) {
         if (event.key === 'Escape') {
             selectorWindow.style.display = 'none';
         }
     });
+}
+function inputWindow(callback, doFocus = false) {
+    let inputWindow = document.getElementById('inputWindowArea');
+    if(!inputWindow) {
+        inputWindow = document.createElement('div');
+        inputWindow.setAttribute('id', 'inputWindowArea');
+        document.body.appendChild(inputWindow);
+    } else {
+        inputWindow.style.display = '';
+        inputWindow.innerHTML = '';
+    }
+    inputWindow.setAttribute('style', 'position:fixed;top:0;left:0;background-color:rgba(200,200,200,0.7);width:100%;height:100%;');
+
+    let inputText = document.createElement('input');
+    inputText.setAttribute('id', 'inputWindowArea_input');
+    let goButton = document.createElement('input');
+    goButton.setAttribute('type', 'button');
+    goButton.setAttribute('value', 'Apply');
+    goButton.addEventListener('click', () => {
+        inputWindow.style.display = 'none';
+        callback(inputText.value);
+    });
+
+    inputWindow.appendChild(inputText);
+    inputWindow.appendChild(goButton);
+
+    document.addEventListener('keyup', function(event) {
+        if (event.key === 'Escape') {
+            inputWindow.style.display = 'none';
+        }
+    });
+    if(doFocus) {
+        inputText.focus();
+    }
 }
 </script>
 </head>

@@ -44,7 +44,7 @@
 #displayTable > table > * > tr > th .menu_action{
     position: absolute;
     right: 0;
-    bottom: -40px;
+    bottom: -58px;
     cursor: pointer;
     display: none;
     z-index: 100;
