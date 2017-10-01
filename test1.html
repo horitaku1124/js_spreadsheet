@@ -155,12 +155,26 @@ function createDataTable(header, body) {
                 let cellText = document.createElement('span');
                 cellText.innerText = cell.value;
                 cellElm.appendChild(cellText);
-            } else {
-                let nullArea =  document.createElement('span');
-                nullArea.innerHTML = 'Null';
-                nullArea.setAttribute('class', 'null_area');
-                cellElm.appendChild(nullArea);
             }
+            let typeSelector =  document.createElement('span');
+            typeSelector.innerHTML = cell.type[toString]();
+            typeSelector.setAttribute('class', 'type_selector');
+            typeSelector.addEventListener('click', () => {
+                selectWindow(SQLValue_Select, (type) => {
+                    if (type === SQLValue_NULL[toString]()) {
+                        bodyData[i][j] = new SQLValue(null);
+                    }
+                    if (cell.type === SQLValue_NULL && type === SQLValue_STRING[toString]()) {
+                        bodyData[i][j] = new SQLValue('', SQLValue_STRING);
+                    }
+                    if (type === SQLValue_FUNCTION[toString]()) {
+                        bodyData[i][j] = new SQLValue('', SQLValue_FUNCTION);
+                    }
+                    console.log(cell.type[toString](), type);
+                    createDataTable(headerCells, bodyData);
+                });
+            });
+            cellElm.appendChild(typeSelector);
 
             tr.appendChild(cellElm);
         }
@@ -241,7 +255,7 @@ function mouseOverEvent(event) {
         td.setAttribute('data-appended', '1');
         addClass(td.querySelector('span'), 'hidden');
         input.addEventListener('change', () => {
-            bodyData[row][cell] = new SQLValue(input.value);
+            bodyData[row][cell] = new SQLValue(input.value, bodyData[row][cell].type);
             td.querySelector('span').innerHTML = input.value;
         });
     }
@@ -266,6 +280,32 @@ const SQLValue_NULL     = Symbol('NULL'),
       SQLValue_NUMBER   = Symbol('NUMBER'),
       SQLValue_STRING   = Symbol('STRING'),
       SQLValue_FUNCTION = Symbol('FUNCTION');
+const toString = Symbol('TO_STRING');
+Symbol.prototype[toString] = function() {
+    let value = "Unknown";
+    switch (this) {
+        case SQLValue_NULL:
+            value = "Null";
+            break;
+        case SQLValue_NUMBER:
+            value = "Number";
+            break;
+        case SQLValue_STRING:
+            value = "String";
+            break;
+        case SQLValue_FUNCTION:
+            value = "Function";
+            break;
+    }
+    return value;
+};
+
+const SQLValue_Select = [
+    SQLValue_NULL[toString](),
+    SQLValue_NUMBER[toString](),
+    SQLValue_STRING[toString](),
+    SQLValue_FUNCTION[toString](),
+];
 class SQLValue {
     constructor (value, type) {
         this._value = value;
@@ -287,6 +327,34 @@ class SQLValue {
     clone() {
         return new SQLValue(this._value, this._type);
     }
+}
+function selectWindow(array, callback) {
+    let selectorWindow = document.getElementById('selectorWindowArea');
+    if(!selectorWindow) {
+        selectorWindow = document.createElement('div');
+        selectorWindow.setAttribute('id', 'selectorWindowArea');
+    } else {
+        selectorWindow.innerHTML = '';
+    }
+
+    array.forEach(e => {
+        let radios = document.createElement('p');
+        radios.setAttribute('style', 'background-color: white;padding:0;margin:0;width:100px;');
+        radios.innerHTML = e;
+        radios.addEventListener('click', () => {
+            selectorWindow.style.display = 'none';
+            callback(e);
+        });
+
+        selectorWindow.appendChild(radios);
+    });
+    selectorWindow.setAttribute('style', 'position:fixed;top:0;left:0;background-color:rgba(200,200,200,0.7);width:100%;height:100%;');
+    document.body.appendChild(selectorWindow);
+    document.addEventListener('keyup', function(event) {
+        if (event.key === 'Escape') {
+            selectorWindow.style.display = 'none';
+        }
+    });
 }
 </script>
 </head>
