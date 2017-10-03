@@ -37,7 +37,7 @@ function onPerform() {
         if (lines[i] === '') continue;
         let cells = lines[i].split(', ');
         cells = cells.map(e => {
-            return new SQLValue(e === 'NULL' ? null : e.replace(/^'(.*)'$/, '$1').replace(/^"(.*)"$/, '$1'));
+            return new SQLValue(e.toUpperCase() === 'NULL' ? null : e.replace(/^'(.*)'$/, '$1').replace(/^"(.*)"$/, '$1'));
         });
         bodyData.push(cells);
     }
@@ -53,7 +53,7 @@ function onPerformSql() {
 
     bodyData = bodyData.map(row => row.map(cell => {
         let type =  SQLValue_STRING;
-        if (cell === 'NULL') {
+        if (cell.toUpperCase() === 'NULL') {
             type = SQLValue_NULL;
             cell = null;
         } else if (/\S\(\)/.test(cell)) {
