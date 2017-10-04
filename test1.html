@@ -192,6 +192,9 @@ function createDataTable(header, body) {
                     if (cell.type === SQLValue_NULL && type === SQLValue_STRING[toString]()) {
                         bodyData[i][j] = new SQLValue('', SQLValue_STRING);
                     }
+                    if (cell.type === SQLValue_STRING && type === SQLValue_NUMBER[toString]()) {
+                        bodyData[i][j] = new SQLValue(bodyData[i][j].value, SQLValue_NUMBER);
+                    }
                     if (type === SQLValue_FUNCTION[toString]()) {
                         bodyData[i][j] = new SQLValue('', SQLValue_FUNCTION);
                     }
@@ -228,6 +231,8 @@ function onGenerate() {
                     return "NULL";
                 } else if (e.type === SQLValue_FUNCTION) {
                     return e.value;
+                } else if (e.type === SQLValue_NUMBER) {
+                    return e.value;
                 } else {
                     e = e.value.replace(/</g, '&lt;').replace(/>/g, '&gt;');
                     return "'" + e + "'";
@@ -242,6 +247,8 @@ function onGenerate() {
                         if (e.type === SQLValue_NULL) {
                             return "NULL";
                         } else if (e.type === SQLValue_FUNCTION) {
+                            return e.value;
+                        } else if (e.type === SQLValue_NUMBER) {
                             return e.value;
                         } else {
                             e = e.value.replace(/</g, '&lt;').replace(/>/g, '&gt;');
