@@ -1,22 +1,22 @@
 "use strict";
 
-const TYPE_NONE = 0,
-    TYPE_COLUMN = 1,
-    TYPE_FROM = 2,
-    TYPE_WHERE = 3,
-    TYPE_VALUES = 4;
+const TYPE_NONE = Symbol('NONE'),
+    TYPE_COLUMN = Symbol('COLUMN'),
+    TYPE_FROM = Symbol('FROM'),
+    TYPE_WHERE = Symbol('WHERE'),
+    TYPE_VALUES = Symbol('VALUES');
 
-const NODE_TYPE_SELECT = 1,
-    NODE_TYPE_UPDATE = 2,
-    NODE_TYPE_INSERT = 3,
-    NODE_TYPE_DELETE = 4;
+const NODE_TYPE_SELECT = Symbol('SELECT'),
+    NODE_TYPE_UPDATE = Symbol('UPDATE'),
+    NODE_TYPE_INSERT = Symbol('INSERT'),
+    NODE_TYPE_DELETE = Symbol('DELETE');
 
-const NODE_VALUE = 1,
-    NODE_CHILD_TYPE_COLUMN = 1001,
-    NODE_CHILD_TYPE_FROM = 1002,
-    NODE_CHILD_TYPE_WHERE = 1003,
-    NODE_CHILD_TYPE_VALUES = 1004,
-    NODE_CHILD_TYPE_INTO = 1005;
+const NODE_VALUE = Symbol('VALUE'),
+    NODE_CHILD_TYPE_COLUMN = Symbol('TYPE_COLUMN'),
+    NODE_CHILD_TYPE_FROM = Symbol('TYPE_FROM'),
+    NODE_CHILD_TYPE_WHERE = Symbol('TYPE_WHERE'),
+    NODE_CHILD_TYPE_VALUES = Symbol('TYPE_VALUES'),
+    NODE_CHILD_TYPE_INTO = Symbol('TYPE_INTO');
 
 class Node {
     constructor(type, value) {
