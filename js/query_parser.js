@@ -161,6 +161,7 @@ class QueryParser {
             values: [],
             into: null
         };
+        let queryTokensList = [];
 
         let verse = "", quote = null, queryType;
         let queryTypeDecided = false;
@@ -203,58 +204,72 @@ class QueryParser {
                 }
                 QueryParser.exeVerse(type, queryTokens, char);
                 verse = "";
+            } else if(char === ';') {
+                queryTokensList.push([queryType, queryTokens]);
+                queryTokens = {
+                    columns: [],
+                    froms: [],
+                    wheres: [],
+                    values: [],
+                    into: null
+                };
             } else {
                 verse += char;
             }
         }
         if(verse !== "") {
-            QueryParser.exeVerse(type, queryTokens, verse);
+            QueryParser.exeVerse(queryType, queryTokens, verse);
+        }
+        if (queryTokens.columns.length > 0 && queryTokens.values.length > 0) {
+            queryTokensList.push([type, queryTokens]);
         }
 
-        let syntaxTree = QueryParser.makeSyntaxTree(queryType, queryTokens);
-        console.log("makeSyntaxTree", syntaxTree);
+        let parseResultList = [];
+        for (let [queryType, queryTokens] of queryTokensList) {
+            let syntaxTree = QueryParser.makeSyntaxTree(queryType, queryTokens);
 
-        let selectors = [], froms = [], wheres = [], records = [], into = null;
-        for(let i = 0;i < syntaxTree.children.length;i++) {
-            let node = syntaxTree.children[i];
-            if(node.type === NODE_CHILD_TYPE_COLUMN) {
-                for(let child of node.children) {
-                    selectors.push(child.value);
+            let selectors = [], froms = [], wheres = [], records = [], into = null;
+            for(let i = 0;i < syntaxTree.children.length;i++) {
+                let node = syntaxTree.children[i];
+                if(node.type === NODE_CHILD_TYPE_COLUMN) {
+                    for(let child of node.children) {
+                        selectors.push(child.value);
+                    }
+                }
+                if(node.type === NODE_CHILD_TYPE_FROM) {
+                    for(let child of node.children) {
+                        froms.push(child.value);
+                    }
+                }
+                if(node.type === NODE_CHILD_TYPE_WHERE) {
+                    for(let child of node.children) {
+                        wheres.push(child.value);
+                    }
+                }
+                if(node.type === NODE_CHILD_TYPE_VALUES) {
+                    let values = [];
+                    for(let child of node.children) {
+                        values.push(child.value);
+                    }
+                    records.push(values);
+                }
+                if(node.type === NODE_CHILD_TYPE_INTO) {
+                    into = node.value;
                 }
             }
-            if(node.type === NODE_CHILD_TYPE_FROM) {
-                for(let child of node.children) {
-                    froms.push(child.value);
-                }
-            }
-            if(node.type === NODE_CHILD_TYPE_WHERE) {
-                for(let child of node.children) {
-                    wheres.push(child.value);
-                }
-            }
-            if(node.type === NODE_CHILD_TYPE_VALUES) {
-                let values = [];
-                for(let child of node.children) {
-                    values.push(child.value);
-                }
-                records.push(values);
-            }
-            if(node.type === NODE_CHILD_TYPE_INTO) {
-                into = node.value;
+            let parseResult = {type: queryType};
+            if(queryType === "select" || queryType === "update" || queryType === "delete") {
+                let dataSource = fromToDataSource(this._global, froms);
+                dataSource = filterByWhere(dataSource, wheres, selectors);
+                parseResult["dataSource"] = dataSource;
+                parseResultList.push(parseResult);
+            } else if(queryType === "insert") {
+                parseResult["selectors"] = selectors;
+                parseResult["records"] = records;
+                parseResult["into"] = into;
+                parseResultList.push(parseResult);
             }
         }
-        let parseResult = {type: queryType};
-        if(queryType === "select" || queryType === "update" || queryType === "delete") {
-            let dataSource = fromToDataSource(this._global, froms);
-            dataSource = filterByWhere(dataSource, wheres, selectors);
-            parseResult["dataSource"] = dataSource;
-            return parseResult;   
-        }
-        if(queryType === "insert") {
-            parseResult["selectors"] = selectors;
-            parseResult["records"] = records;
-            parseResult["into"] = into;
-            return parseResult;
-        }
+        return parseResultList;
     }
 }

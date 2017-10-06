@@ -47,22 +47,28 @@ function onPerform() {
 function onPerformSql() {
     let sql = document.getElementById('inputSection').value;
     let parser = new QueryParser([]);
-    let parseResult = parser.convert(sql);
-    headerCells = parseResult.selectors;
-    bodyData = parseResult.records;
+    let parseResultList = parser.convert(sql);
 
-    bodyData = bodyData.map(row => row.map(cell => {
-        let type =  SQLValue_STRING;
-        if (cell.toUpperCase() === 'NULL') {
-            type = SQLValue_NULL;
-            cell = null;
-        } else if (/\S\(\)/.test(cell)) {
-            type = SQLValue_FUNCTION;
-        }
-        return new SQLValue(cell, type)
-    }));
+    let newBodyData = [];
+    for (let parseResult of parseResultList) {
+        parseResult.records.forEach(row =>  {
+            row = row.map(cell => {
+                let type =  SQLValue_STRING;
+                if (cell.toUpperCase() === 'NULL') {
+                    type = SQLValue_NULL;
+                    cell = null;
+                } else if (/\S\(\)/.test(cell)) {
+                    type = SQLValue_FUNCTION;
+                }
+                return new SQLValue(cell, type)
+            });
+            newBodyData.push(row);
+        });
+    }
+    bodyData = newBodyData;
 
-    document.getElementById('table_name').value = parseResult.into;
+    headerCells = parseResultList[0].selectors;
+    document.getElementById('table_name').value = parseResultList[0].into;
     createDataTable(headerCells, bodyData);
 }
 
