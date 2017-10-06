@@ -57,8 +57,10 @@ function onPerformSql() {
                 if (cell.toUpperCase() === 'NULL') {
                     type = SQLValue_NULL;
                     cell = null;
-                } else if (/\S\(\)/.test(cell)) {
+                } else if (/^\S+\(\)$/.test(cell)) {
                     type = SQLValue_FUNCTION;
+                } else if (/^\d+$/.test(cell)) {
+                    type = SQLValue_NUMBER;
                 }
                 return new SQLValue(cell, type)
             });
