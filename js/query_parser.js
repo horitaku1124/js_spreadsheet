@@ -135,9 +135,9 @@ class QueryParser {
                 }
                 // Value type
                 if(column !== "," && column !== "("  && column !== ")") {
-                    if(column.indexOf("\\") >= 0) {
-                        column = escapeByCharacter(column);
-                    }
+                    // if(column.indexOf("\\") >= 0) {
+                    //     column = QueryParser.escapeByCharacter(column);
+                    // }
                     let node = new Node(NODE_VALUE, column);
                     valuesNode.addChild(node);
                 }
@@ -151,6 +151,35 @@ class QueryParser {
         }
         return root;
     }
+
+    static escapeByCharacter(chars) {
+        let index = 0;
+        while(true) {
+            index = chars.indexOf("\\", index);
+            if(index < 0) {
+                break;
+            }
+            let c = chars.charAt(index + 1);
+            let replaceTo = " ";
+            switch (c) {
+                case "'":
+                    replaceTo = "'";
+                    break;
+                case "\"":
+                    replaceTo = "\"";
+                    break;
+                case "n":
+                    replaceTo = "\n";
+                    break;
+                default:
+                    break;
+            }
+            chars = chars.substring(0, index) + replaceTo + chars.substring(index + 2);
+            index--;
+        }
+        return chars;
+    }
+
 
     convert(sql)
     {
